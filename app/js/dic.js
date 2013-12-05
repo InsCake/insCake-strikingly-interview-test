@@ -1,13 +1,26 @@
-var dic,
-	charFreqArr = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-	nWordsArr, charFreqArr, theChar;
+function readDic() { //加载字典--------------------------------------------------------
+	$.ajax({
+		url: "dictionary/allWords.txt",
+		type: 'GET',
+		dataType: 'text',
+		success: function (data) {
+			dic = data.split("\r\n");
+		}
+	});
+};
+
+//全局变量-----------------------------------------------------------------------------
+var dic, //字典样本
+	charFreqArr, nWordsArr, charFreqArr, theChar;
+
 //事件注册 - 获取书本
 $('#readDic').on('click', function () {
 	var wordsAllArr = readDic();
 });
 
-//获取第一个值
-function sendTheChar(word, flag) {
+
+
+function bestChar(word, isGuessing) {
 	//	var wordStr = "******",
 	//		reg = new RegExp('[A-Z]');
 	//	
@@ -20,35 +33,26 @@ function sendTheChar(word, flag) {
 	//		alert(theChar);
 	//	}
 	var wordStr = word;
-	if (flag == 0) {
-		charFreqArr = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-		nWordsArr = getNWordsArr(wordStr, dic),
-		charFreqArr = getCharFreqArr(wordStr, nWordsArr),
+	if (isGuessing == 0) { //新的单词来了，要进行n个字母的识别 和 响应的字典子集生成
+		charFreqArr = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; //新的单词来了，要将旧的字频数组复位
+		nWordsArr = getNWordsArr(wordStr, dic), //得到n个字母的所有单词数组
+		charFreqArr = getCharFreqArr(nWordsArr), //得到n个字母的单词的字频数组
 		theChar = getTheChar(charFreqArr); //得到候选字母
-	} else if (flag == 1) {
-		theChar = getTheChar(charFreqArr); //得到候选字母
+	} else if (isGuessing == 1) { //还没猜完的单词又来了
+		reg = new RegExp('[A-Z]');
+		if (！reg.test(wordStr)) { //没有猜对还T_T
+			theChar = getTheChar(charFreqArr); //得到候选字母
+		} else { //至少有猜对了的呢
+			alert('不能含有字母');
+		}
 	}
 	return theChar;
 };
 
 
+//---分支逻辑1：获取n个字母的单词中最高几率出现的那个她！---------------------------------------------------------------------
 
-
-
-//-1-字典文件阅读，并执行-2-方法
-function readDic() {
-	$.ajax({
-		url: "dictionary/allWords.txt",
-		type: 'GET',
-		dataType: 'text',
-		success: function (data) {
-			dic = data.split("\r\n");
-		}
-	});
-};
-
-//-2-根据word字符串长度和wordsAllArr返回n个长度的nWordsArr，执行-3-方法
-function getNWordsArr(wordStr, wordsAllArr) {
+function getNWordsArr(wordStr, wordsAllArr) { //根据word字符串长度和wordsAllArr返回n个长度的nWordsArr
 	var wordSize = wordStr.length,
 		nWordsArr = [];
 
@@ -60,8 +64,7 @@ function getNWordsArr(wordStr, wordsAllArr) {
 	return nWordsArr;
 };
 
-//-3-根据nWordsArr返回字母出现率charFreqArr
-function getCharFreqArr(wordStr, nWordsArr) {
+function getCharFreqArr(nWordsArr) { //根据nWordsArr返回字母出现率charFreqArr
 	for (var i = 0; i < nWordsArr.length; i++) {
 		for (var j = 0; j < 4; j++) {
 			switch (nWordsArr[i].substring(j, j + 1)) {
@@ -149,16 +152,14 @@ function getCharFreqArr(wordStr, nWordsArr) {
 	return charFreqArr;
 };
 
-//-4-根据charFreqArr，返回最高频字母，并将其清零，表示已猜过
-function getTheChar(charFreqArr) {
-	/*function sortNumber(a, b) {
-		return b - a;
-	};
-	charFreqArr.sort(sortNumber);//排序
-	
-	var theChar = charFreqArr[0];
-	charFreqArr[0] = -1;
-	return theChar;*/
+
+//---分支逻辑2：获取n个字母的单词中除了已知位置之外最高最高几率出现的那个她！---------------------------------------------------
+
+
+
+//---合并上面分支逻辑：根据charFreqArr，返回最高频字母，并将其清零，表示已猜过！-----------------------------------------------
+
+function getTheChar(charFreqArr) { //根据charFreqArr，返回最高频字母，并将其清零，表示已猜过
 	var chars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'],
 		theCharIndex = 0;
 	for (var i = 0; i < 25; i++) {

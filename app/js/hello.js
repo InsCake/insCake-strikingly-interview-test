@@ -17,8 +17,7 @@ function nextWord() {
 		"userId": "m.saihomi@gmail.com",
 		"secret": secret
 	}, function (data, status) {
-		var _char = (sendTheChar(data.word, 0)).toUpperCase();
-		guessWord(_char);
+		guessWord((bestChar(data.word, 0)).toUpperCase());
 	});
 }
 
@@ -37,7 +36,7 @@ function guessWord(_char) {
 				nextWord();
 			}
 		} else {
-			guessWord(sendTheChar(data.word, 1).toUpperCase());
+			guessWord(bestChar(data.word, 1).toUpperCase());
 		}
 	});
 }
@@ -52,14 +51,16 @@ function getTestResults() {
 		console.log('numberOfCorrectWords:' + data.data.numberOfCorrectWords);
 		console.log('numberOfWrongGuesses' + data.data.numberOfWrongGuesses);
 		console.log('totalScore' + data.data.totalScore);
-		submitTestResults();
+		var isSubmitTestResult = prompt('submitTestResults');
+		if (isSubmitTestResult == 1) {
+			submitTestResults(isSubmitTestResult);
+		}
 	});
 }
 
-function submitTestResults() {
-	var isSubmitTestResult = prompt('submitTestResults');
+function submitTestResults(isSubmitTestResult) {
 	$.post("http://strikingly-interview-test.herokuapp.com/guess/process", {
-		"action": isSubmitTestResult,
+		"action": 'submitTestResults',
 		"userId": "m.saihomi@gmail.com",
 		"secret": secret
 	}, function (data, status) {
